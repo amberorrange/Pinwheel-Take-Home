@@ -1,15 +1,43 @@
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
+import mechanicalsoup
 
+
+browser = mechanicalsoup.Browser()
 url = "https://apps.irs.gov/app/picklist/list/priorFormPublication.html"
-page = urlopen(url)
-html = page.read().decode("utf-8")
+page = browser.get(url)
+page_html = page.soup
 
-soup = BeautifulSoup(html, "html.parser")
 
-search_box = soup.find("input", id="searchFor")
+#get the form
+form = page_html.select("form")[0]
 
-submit_button = soup.find("input", type="submit", value="Find")
+
+
+# form.select("input")[3]["value"] = "zeus"
+
+
+print(form)
+
+# print(form)
+# form.select("input")[0]["value"] = "Form 1095-C"
+# search_results = browser.submit(form, page.url)
+
+
+
+# print(browser.get(search_results))
+
+
+
+# url = "https://apps.irs.gov/app/picklist/list/priorFormPublication.html"
+# page = urlopen(url)
+# html = page.read().decode("utf-8")
+
+# soup = BeautifulSoup(html, "html.parser")
+
+# search_box = soup.find("input", id="searchFor")
+
+# submit_button = soup.find("input", type="submit", value="Find")
 
 
 #the top steps get me the html
@@ -19,6 +47,6 @@ submit_button = soup.find("input", type="submit", value="Find")
 #names are an exact match....how to deal with multiple pages of results
 
 
-print(search_box)
-print() 
-print(submit_button)
+# print(search_box)
+# print() 
+# print(submit_button)
