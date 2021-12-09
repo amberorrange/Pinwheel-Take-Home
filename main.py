@@ -4,27 +4,56 @@ import mechanicalsoup
 
 
 browser = mechanicalsoup.Browser()
-# url = "https://apps.irs.gov/app/picklist/list/priorFormPublication.html"
-# page = browser.get(url)
-# page_html = page.soup
-
-
-beginning_url = "https://apps.irs.gov/app/picklist/list/priorFormPublication.html;jsessionid=rhBpcYp77FqlnEus-PDcS79Y.20?value=" 
-end_url = "&criteria=formNumber&submitSearch=Find"
+beginning_url = "https://apps.irs.gov/app/picklist/list/priorFormPublication.html?sortColumn=currentYearRevDate&indexOfFirstRow=0&value=" 
+end_url = "&criteria=formNumber&resultsPerPage=200&isDescending=false"
 
 form_list = ["Form 1095-C"]
 
 for form in form_list:
     joined_name = form.replace(" ", "+")
-    print(joined_name)
+   
 
     url = beginning_url + joined_name + end_url
 
-    page = browser.get(url)
-    page_html = page.soup
+    page = urlopen(url)
+    html_bytes = page.read()
+    page_html = html_bytes.decode("utf-8")
 
-    print(page_html)
 
+    parsed_html = BeautifulSoup(page_html, "html.parser")
+
+    # print(parsed_html.get_text())
+
+    form_table = parsed_html.find_all("table", class_="picklist-dataTable")
+
+    evens = parsed_html.find_all("tr", class_="even")
+
+    odss = parsed_html.find_all("tr", class_="odd")
+
+
+# print(form_table)
+
+results_lst = []
+for item in evens:
+    # print(item)
+
+    product_name = item.find("a").get_text().strip()
+
+    title = item.find("td", class_="MiddleCellSpacer").get_text().strip()
+
+    year = item.find("td", class_="EndCellSpacer").get_text().strip()
+
+    print(product_name, title, year)
+
+
+
+
+
+
+
+
+
+    def filter_results(lst_of_lists):
 
 
 
