@@ -12,23 +12,24 @@ END_URL = "&criteria=formNumber&resultsPerPage=200&isDescending=false"
 form_list = ["Form 1095-C", "Form W-2"]
 
 
-def find_num_of_pages(results_count):
-    """returns the number of pages of results with each page showing 200 results at a time"""
-    num_of_pages = math.ceil(results_count / 200)
+#functions to find the number page results from searching for a form 
+def find_num_of_page_results(num_of_results):
+    """Takes in total number of results and returns the number of page results.
+        Each page shows 200 results at a time"""
+    num_of_pages = math.ceil(num_of_results / 200)
     return num_of_pages
 
 
-def get_number_of_results(results_html):
-        """returns the number of results from a search"""
+def find_num_of_results(results_html):
+        """Takes in the html of the search results page and returns the total number of results"""
         num_of_results = results_html.find("th", class_="ShowByColumn").get_text().strip()
         num_of_results = num_of_results.split()
         num_of_results = int(num_of_results[5])
-        num_of_results_pages = find_num_of_pages(num_of_results)
-        return num_of_results_pages
+        return num_of_results
 
 
 def initial_search(form_name):
-    """returns the number of page results after from searching for a form"""
+    """Returns the number of page results after searching for a form"""
     joined_name = form_name.replace(" ", "+")
     url = BEGINNING_URL + joined_name + END_URL
     page = urlopen(url)
@@ -36,9 +37,34 @@ def initial_search(form_name):
     page_html = html_bytes.decode("utf-8")
     parsed_html = BeautifulSoup(page_html, "html.parser")
 
-    results_pages = get_number_of_results(parsed_html)
+    num_of_results = find_num_of_results(parsed_html)
+    page_results = find_num_of_page_results(num_of_results)
 
-    return results_pages
+    return page_results
+
+
+
+def parse_forms_list(forms_to_add, results_lst, form_name):
+    """Takes in the html all results, parses it, 
+    and adds it to an array. Returns the array"""
+
+    for item in forms_to_add:
+            product_name = item.find("a").get_text().strip()
+            title = item.find("td", class_="MiddleCellSpacer").get_text().strip()
+            year = item.find("td", class_="EndCellSpacer").get_text().strip()
+            # print(product_name, title, year)
+
+            if product_name == form_name:
+                results_lst.append([product_name, title, year])
+
+    return results_lst
+
+
+
+
+
+
+
 
         
 
@@ -58,7 +84,7 @@ def get_search_results(forms_to_search):
 
             url = first_part_url + form + END_URL
             url = url.replace(" ","")
-            # print(url)
+            print(url)
 
             page = urlopen(url)
             html_bytes = page.read()
@@ -68,26 +94,8 @@ def get_search_results(forms_to_search):
             evens = parsed_html.find_all("tr", class_="even")
             odds = parsed_html.find_all("tr", class_="odd")
 
-
-            for item in evens:
-                product_name = item.find("a").get_text().strip()
-                title = item.find("td", class_="MiddleCellSpacer").get_text().strip()
-                year = item.find("td", class_="EndCellSpacer").get_text().strip()
-                # print(product_name, title, year)
-
-                if product_name == form:
-                    results_lst.append([product_name, title, year])
-
-
-            for item in odds:
-                product_name = item.find("a").get_text().strip()
-                title = item.find("td", class_="MiddleCellSpacer").get_text().strip()
-                year = item.find("td", class_="EndCellSpacer").get_text().strip()
-                # print(product_name, title, year)
-
-                if product_name == form:
-                    results_lst.append([product_name, title, year])
-
+            results_lst = parse_forms_list(evens, results_lst, form)
+            results_lst = parse_forms_list(odds, results_lst, form)
 
 
             years = []
