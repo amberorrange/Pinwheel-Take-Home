@@ -1,10 +1,7 @@
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
-import mechanicalsoup
 import math
-
-
-# browser = mechanicalsoup.Browser()
+import os
 
 form_list = ["Form 1095-C", "Form W-2"]
 
@@ -69,6 +66,14 @@ def retrieve_pdfs(forms_to_add, form_name, range_start, range_end):
                 pdf = item.find(href=True)
                 pdf = pdf['href']
                 print(pdf)
+
+
+                p = f"{product_name}-{year}"   
+
+                path = os.path.join(product_name, p)
+
+                if not os.path.exists(product_name):
+                    os.makedirs(product_name)
                
 
                 

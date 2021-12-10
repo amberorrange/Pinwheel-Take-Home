@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
-import mechanicalsoup
+
 import math
 
 #note:input- tax form name and range of years
