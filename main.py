@@ -55,6 +55,25 @@ def parse_forms_list(forms_to_add, results_lst, form_name):
 
     return results_lst
 
+def retrieve_pdfs(forms_to_add, form_name, range_start, range_end):
+    """Takes in the html of the form results, parses it, and returns the pdf files to be downloaded"""
+
+    for item in forms_to_add:
+
+        product_name = item.find("a").get_text().strip()
+        year = item.find("td", class_="EndCellSpacer").get_text().strip() 
+
+        if product_name == form_name:
+            if int(year) in range(range_start, range_end + 1):
+                print(year)
+                pdf = item.find(href=True)
+                pdf = pdf['href']
+                print(pdf)
+               
+
+                
+
+
 
 def get_search_results(forms_to_search):
 
@@ -75,6 +94,11 @@ def get_search_results(forms_to_search):
 
             evens = parsed_html.find_all("tr", class_="even")
             odds = parsed_html.find_all("tr", class_="odd")
+
+
+            pdfs = retrieve_pdfs(evens, form, 2018, 2020)
+            pdfs_odd = retrieve_pdfs(odds, form, 2018, 2020)
+            
 
             results_lst = parse_forms_list(evens, results_lst, form)
             results_lst = parse_forms_list(odds, results_lst, form)
