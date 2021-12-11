@@ -13,20 +13,20 @@ def find_num_of_results(results_html):
 
         num_of_results = num_of_results.split()
         num_of_results = int(num_of_results[5].replace(",", ""))
-      
+    
         return num_of_results
 
 
-def find_num_of_page_results(html):
+def find_num_of_page_results(page_html):
     """Takes in total number of results and returns the number of page results.
         Each page shows 200 results at a time"""
-    num_of_results =  find_num_of_results(html)
+    num_of_results =  find_num_of_results(page_html)
 
     if not num_of_results:
             return None
 
     num_of_pages = math.ceil(num_of_results / 200)
-    
+
     return num_of_pages
 
 
@@ -42,17 +42,17 @@ def search_webpage(form_name, starting_point):
     page = requests.get(url)
     page_html = page.text
     parsed_html = BeautifulSoup(page_html, "html.parser")
-  
+   
     return parsed_html
 
-def parse_forms_list(forms_to_add, results_lst, form_name):
-    """Takes in the html of the form results, parses it, 
-    and adds it to an array. Returns the array"""
+def find_matching_forms(forms_to_add, results_lst, form_name):
+    """Takes in the html of the form results, and adds
+      matching results to an array. Returns the array"""
 
-    for item in forms_to_add:
-            product_name = item.find("a").get_text().strip()
-            title = item.find("td", class_="MiddleCellSpacer").get_text().strip()
-            year = item.find("td", class_="EndCellSpacer").get_text().strip()
+    for form_listing in forms_to_add:
+            product_name = form_listing.find("a").get_text().strip()
+            title = form_listing.find("td", class_="MiddleCellSpacer").get_text().strip()
+            year = form_listing.find("td", class_="EndCellSpacer").get_text().strip()
 
             #ensures that you only return exact matches
             if product_name == form_name:
@@ -61,16 +61,28 @@ def parse_forms_list(forms_to_add, results_lst, form_name):
     return results_lst
 
 
-def create_years_lst(lst_of_forms):
-        """Accepts a list of all matching forms and returns a list of only each year."""
+def create_years_lst(matching_forms):
+        """Returns a list of years from forms that match"""
         years = []
-        for item in lst_of_forms:
+        for item in matching_forms:
             years.append(int(item[2]))
         return years
 
+def get_results_table(page_number, form_name):
+    """Returns list of forms(in HTML" from the results page."""
+    ind_of_first_row = (200 * page_number)
+
+    parsed_html = search_webpage(form_name, ind_of_first_row)
+
+    evens_table = parsed_html.find_all("tr", class_="even")
+    odds_table = parsed_html.find_all("tr", class_="odd")
+
+    return evens_table + odds_table
+
+
 
 def get_search_results(forms_to_search):
-    """Returns a list of each matching forms information in JSON"""
+    """Returns a list of all matching forms information in JSON"""
     final_results = []
 
     for form in forms_to_search:
@@ -85,24 +97,18 @@ def get_search_results(forms_to_search):
         #loop through each page of results
         results_lst = []
         for page_number in range(num_page_results):
-            ind_of_first_row = (200 * page_number)
 
-            parsed_html = search_webpage(form, ind_of_first_row)
-
-            evens = parsed_html.find_all("tr", class_="even")
-            odds = parsed_html.find_all("tr", class_="odd")
-
-            results_lst = parse_forms_list(evens, results_lst, form)
-            results_lst = parse_forms_list(odds, results_lst, form)
-
+            results_table = get_results_table(page_number, form)
+            matching_results = find_matching_forms(results_table, results_lst, form)
+           
             #add the years from the results into a list to find min and max
-            years = create_years_lst(results_lst)
+            years = create_years_lst(matching_results)
 
         if years:
             minimum = min(years)
             maximum = max(years)
 
-            form_dict = {"form_number": results_lst[0][0], "form_title": results_lst[0][1],
+            form_dict = {"form_number": matching_results[0][0], "form_title": matching_results[0][1],
                     "min_year": minimum, "max_year": maximum}
 
             final_results.append(form_dict)
