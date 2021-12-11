@@ -40,13 +40,12 @@ def search_webpage(form_name, starting_point):
     url = beginning_url + form_name + end_url
 
     page = requests.get(url)
-    page_html = page.text
-
-    parsed_html = BeautifulSoup(page_html, "html.parser")
-
-    print(parsed_html)
-
-    return parsed_html
+    print(page)
+    # page_html = page.text
+    # print(page_html)
+    # parsed_html = BeautifulSoup(page_html, "html.parser")
+  
+    # return parsed_html
 
 def parse_forms_list(forms_to_add, results_lst, form_name):
     """Takes in the html of the form results, parses it, 
