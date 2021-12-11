@@ -14,13 +14,11 @@ def retrieve_pdfs(forms_to_add, form_name, start_year, end_year):
         year = item.find("td", class_="EndCellSpacer").get_text().strip() 
 
         if product_name == form_name:
-            if int(year) in range(start_year, end_year + 1):
-                # print(year)
+            if int(year) in range(int(start_year), int(end_year + 1)):
                 pdf = item.find(href=True)
                 pdf = pdf['href']
-                # print(pdf)
 
-                p = f"{product_name}-{year}"   
+                p = f"{product_name}-{year}.pdf"   
 
                 path = os.path.join(product_name, p)
 
@@ -51,30 +49,28 @@ def download_forms(form_name, start_year, end_year):
             evens = parsed_html.find_all("tr", class_="even")
             odds = parsed_html.find_all("tr", class_="odd")
 
-            pdfs = retrieve_pdfs(evens, form_name, start_year, end_year)
-            pdfs_odd = retrieve_pdfs(odds, form_name, start_year, end_year)
-
-            
-    
-
-download_forms("Form W-2", 2018, 2020)
+            retrieve_pdfs(evens, form_name, start_year, end_year)
+            retrieve_pdfs(odds, form_name, start_year, end_year)
 
 
+        
 
 def main():
     if len(sys.argv) != 4:
-        print("Enter the name of form in quotations marks, followed by \nfollowed by the start year, and the end year.")
+        print("Enter the name of form in quotations marks, followed by the start year and end year.")
         print("Ex: 'Form W-2' 2018 2020")
         return
+    
+    form_name = sys.argv[1]
 
-    # forms_lst = sys.argv[1].split(',')
-    # search_results = get_search_results(forms_lst)
+    try:
+        start_year = int(sys.argv[2])
+        end_year = int(sys.argv[3])
+    except:
+        return
 
-    # if search_results:
-    #     print(search_results)
-    #     return search_results
-    # else:
-    #     print("No matches.")
+    download_forms(form_name, start_year, end_year)
+   
 
 if __name__ == "__main__":
     main()
