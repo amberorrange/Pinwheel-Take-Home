@@ -1,20 +1,7 @@
 from bs4 import BeautifulSoup
 import math
-import os
 import requests
 import sys
-
-
-#input-each form name must be in strings and separated by a comma with no white space in between
-
-form_list = ["Form 1095-C", "Form W-2"]
-
-#functions to find the number page results from searching for a form 
-def find_num_of_page_results(num_of_results):
-    """Takes in total number of results and returns the number of page results.
-        Each page shows 200 results at a time"""
-    num_of_pages = math.ceil(num_of_results / 200)
-    return num_of_pages
 
 
 def find_num_of_results(results_html):
@@ -25,9 +12,22 @@ def find_num_of_results(results_html):
             return None
 
         num_of_results = num_of_results.split()
-        num_of_results = num_of_results[5].replace(",", "")
-        num_of_results = int(num_of_results)
+        num_of_results = int(num_of_results[5].replace(",", ""))
+      
         return num_of_results
+
+
+def find_num_of_page_results(html):
+    """Takes in total number of results and returns the number of page results.
+        Each page shows 200 results at a time"""
+    num_of_results =  find_num_of_results(html)
+
+    if not num_of_results:
+            return None
+
+    num_of_pages = math.ceil(num_of_results / 200)
+    
+    return num_of_pages
 
 
 def search_webpage(form_name, starting_point):
@@ -40,12 +40,10 @@ def search_webpage(form_name, starting_point):
     url = beginning_url + form_name + end_url
 
     page = requests.get(url)
-    print(page)
-    # page_html = page.text
-    # print(page_html)
-    # parsed_html = BeautifulSoup(page_html, "html.parser")
+    page_html = page.text
+    parsed_html = BeautifulSoup(page_html, "html.parser")
   
-    # return parsed_html
+    return parsed_html
 
 def parse_forms_list(forms_to_add, results_lst, form_name):
     """Takes in the html of the form results, parses it, 
@@ -62,56 +60,30 @@ def parse_forms_list(forms_to_add, results_lst, form_name):
 
     return results_lst
 
-def retrieve_pdfs(forms_to_add, form_name, range_start, range_end):
-    """Takes in the html of the form results, parses it, and returns the pdf files to be downloaded"""
 
-    for item in forms_to_add:
-
-        product_name = item.find("a").get_text().strip()
-        year = item.find("td", class_="EndCellSpacer").get_text().strip() 
-
-        if product_name == form_name:
-            if int(year) in range(range_start, range_end + 1):
-                # print(year)
-                pdf = item.find(href=True)
-                pdf = pdf['href']
-                # print(pdf)
-
-
-                p = f"{product_name}-{year}"   
-
-                path = os.path.join(product_name, p)
-
-                if not os.path.exists(product_name):
-                    os.makedirs(product_name)
-
-                with open(path, "wb") as f_out:
-                    #can I do this with beautiful soup?
-                    f_out.write(requests.get(pdf).content)
-               
-
-                
-
+def create_years_lst(lst_of_forms):
+        """Accepts a list of all matching forms and returns a list of only each year."""
+        years = []
+        for item in lst_of_forms:
+            years.append(int(item[2]))
+        return years
 
 
 def get_search_results(forms_to_search):
-
+    """Returns a list of each matching forms information in JSON"""
     final_results = []
 
     for form in forms_to_search:
 
+        #first part is to get the number of pages results
         results_html = search_webpage(form, 0)
 
-        num_total_results = find_num_of_results(results_html)
-        
-        
-        if not num_total_results:
+        num_page_results = find_num_of_page_results(results_html)
+        if not num_page_results:
             return None
 
-        num_page_results = find_num_of_page_results(num_total_results)
-
+        #loop through each page of results
         results_lst = []
-
         for page_number in range(num_page_results):
             ind_of_first_row = (200 * page_number)
 
@@ -120,18 +92,11 @@ def get_search_results(forms_to_search):
             evens = parsed_html.find_all("tr", class_="even")
             odds = parsed_html.find_all("tr", class_="odd")
 
-
-            pdfs = retrieve_pdfs(evens, form, 2018, 2020)
-            pdfs_odd = retrieve_pdfs(odds, form, 2018, 2020)
-            
-
             results_lst = parse_forms_list(evens, results_lst, form)
             results_lst = parse_forms_list(odds, results_lst, form)
 
             #add the years from the results into a list to find min and max
-            years = []
-            for item in results_lst:
-                years.append(int(item[2]))
+            years = create_years_lst(results_lst)
 
         if years:
             minimum = min(years)
@@ -143,7 +108,6 @@ def get_search_results(forms_to_search):
             final_results.append(form_dict)
 
     return final_results
-
 
 
 def main():
