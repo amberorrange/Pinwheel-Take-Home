@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-from urllib.request import urlopen
 import math
 import os
 import requests
@@ -39,10 +38,13 @@ def search_webpage(form_name, starting_point):
 
     form_name = form_name.replace(" ", "")
     url = beginning_url + form_name + end_url
-    page = urlopen(url) 
-    html_bytes = page.read()
-    page_html = html_bytes.decode("utf-8")
+
+    page = requests.get(url)
+    page_html = page.text
+
     parsed_html = BeautifulSoup(page_html, "html.parser")
+
+    print(parsed_html)
 
     return parsed_html
 
@@ -71,10 +73,10 @@ def retrieve_pdfs(forms_to_add, form_name, range_start, range_end):
 
         if product_name == form_name:
             if int(year) in range(range_start, range_end + 1):
-                print(year)
+                # print(year)
                 pdf = item.find(href=True)
                 pdf = pdf['href']
-                print(pdf)
+                # print(pdf)
 
 
                 p = f"{product_name}-{year}"   
@@ -85,6 +87,7 @@ def retrieve_pdfs(forms_to_add, form_name, range_start, range_end):
                     os.makedirs(product_name)
 
                 with open(path, "wb") as f_out:
+                    #can I do this with beautiful soup?
                     f_out.write(requests.get(pdf).content)
                
 
@@ -140,38 +143,24 @@ def get_search_results(forms_to_search):
 
             final_results.append(form_dict)
 
-    print(final_results)
     return final_results
-
-
-# get_search_results(form_list)
-
 
 
 
 def main():
-
-    if len(sys.argv) == 1:
+    if len(sys.argv) != 2:
+        print("Enter names of forms in quotations marks. \nSeparate with a comma and no spaces in between forms.")
+        print("Ex: 'Form W-2','Form 1095-C'")
         return
 
-    print(sys.argv[1])
-    print(len(sys.argv))
-
     forms_lst = sys.argv[1].split(',')
-    print(forms_lst)
-    
     search_results = get_search_results(forms_lst)
 
     if search_results:
-        print("search_results: ", search_results)
+        print(search_results)
         return search_results
     else:
         print("No matches.")
-
-    
-    
-  
-
 
     
 if __name__ == "__main__":
