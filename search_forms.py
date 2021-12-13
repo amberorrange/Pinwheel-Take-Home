@@ -92,7 +92,7 @@ def get_search_results(forms_to_search):
 
         num_page_results = find_num_of_page_results(results_html)
         if not num_page_results:
-            return None
+            continue
 
         #loop through each page of results
         results_lst = []
