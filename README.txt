@@ -8,7 +8,7 @@ Activate virtual environment: source env/bin/activate
 Install dependencies from requirements.txt with: pip install -r requirements.txt
 
 Part 1: Run the file search_forms.py from the command line. 
-Add the form names(s) as an argument with the forms names(in quotations), separated by a comma, and no space inbtween. 
+Add the form names(s) as an argument with the forms names(in quotations), separated by a comma, and no space om between. 
 Ex: python3 search_forms.py "Form W-2","Form W-2P"
 
 Part 2: Run the file download_forms.py from the command line. 
