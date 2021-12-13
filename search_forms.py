@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import math
 import requests
 import sys
+import json
 
 
 def find_num_of_results(results_html):
@@ -80,7 +81,6 @@ def get_results_table(page_number, form_name):
     return evens_table + odds_table
 
 
-
 def get_search_results(forms_to_search):
     """Returns a list of all matching forms information in JSON"""
     final_results = []
@@ -112,9 +112,10 @@ def get_search_results(forms_to_search):
                     "min_year": minimum, "max_year": maximum}
 
             final_results.append(form_dict)
-
-    return final_results
-
+    
+    if final_results:
+        return json.dumps(final_results)   
+         
 
 def main():
     if len(sys.argv) != 2:
@@ -126,8 +127,8 @@ def main():
     search_results = get_search_results(forms_lst)
 
     if search_results:
-        print(search_results)
-        return search_results
+            print(search_results)
+            return search_results
     else:
         print("No matches.")
 
