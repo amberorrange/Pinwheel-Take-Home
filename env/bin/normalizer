@@ -1,5 +1,5 @@
 #!/bin/sh
-'''exec' "/Users/amberorrange/Desktop/Programming Development/Pinwheel Take Home/env/bin/python3" "$0" "$@"
+'''exec' "/Users/amberorrange/Desktop/Programming Development/Take Home Challenges/Pinwheel Take Home Submission/env/bin/python3" "$0" "$@"
 ' '''
 # -*- coding: utf-8 -*-
 import re
